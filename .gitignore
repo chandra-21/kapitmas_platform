@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Env & secrets — JANGAN pernah commit
+# Pola umum lebih dulu, supaya .env di direktori mana pun ikut tertutup
+.env
+*.env
+.env.*
+!*.example
+!.env.example
+backend/.env
+frontend/.env
+backend/secrets/
+secrets/
+*service-account*.json
+*firebase-credentials*.json
+.env.prod
+.env.dev
+docker/mosquitto.passwd
+
+# Data & generated files
+backend/data/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+#docs
+api.md
+firmware.md
+mqtt_topics.md
+provisioning.md
+
+# Panduan tooling lokal — tidak dipublikasikan
+CLAUDE.md
+.claude/

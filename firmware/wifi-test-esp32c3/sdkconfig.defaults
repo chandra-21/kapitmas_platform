@@ -1,0 +1,18 @@
+# Tes WiFi ESP32-C3 Super Mini — konfigurasi minimal.
+# Sengaja memakai default IDF untuk semua setelan WiFi supaya hasil tes
+# mencerminkan perilaku baku driver, bukan hasil tuning.
+
+CONFIG_IDF_TARGET="esp32c3"
+
+# Flash 4MB, partisi bawaan (single app, tanpa OTA) sudah cukup
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# Console lewat USB Serial/JTAG — board hanya punya USB-C
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# Stack app_main diperbesar — scan + 6 varian koneksi berjalan di sini
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# Log driver WiFi lengkap supaya transisi state terlihat
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y

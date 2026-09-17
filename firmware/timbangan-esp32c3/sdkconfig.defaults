@@ -1,0 +1,86 @@
+# Timbangan ESP32-C3 Super Mini — sdkconfig defaults
+# File ini HARUS di project root (sejajar CMakeLists.txt), bukan di main/.
+# ESP-IDF hanya membaca sdkconfig.defaults dari root project.
+
+# ==================== TARGET ====================
+CONFIG_IDF_TARGET="esp32c3"
+
+# ==================== FLASH & PARTISI ====================
+# ESP32-C3 Super Mini: 4MB flash
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# ==================== CONSOLE ====================
+# Board hanya punya USB-C yang tersambung ke USB Serial/JTAG (GPIO18/19).
+# Console dialihkan ke sana agar UART0 (GPIO20/21) bebas untuk membaca timbangan.
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# ==================== TCP KEEPALIVE ====================
+# Catatan: CONFIG_LWIP_TCP_KEEPALIVE / KEEPIDLE / KEEPINTVL / KEEPCNT yang ada di
+# timbangan-esp32/main/sdkconfig.defaults BUKAN simbol Kconfig yang valid di ESP-IDF —
+# keepalive TCP diatur per-socket lewat setsockopt, bukan lewat sdkconfig.
+# Untuk MQTT, deteksi koneksi mati sudah ditangani MQTT_KEEPALIVE_SEC + heartbeat
+# 10 detik di app_config.h, plus watchdog MQTT_MAX_DISCONNECTED_MS di mqtt_manager.
+
+# ==================== WIFI ====================
+# Buffer & AMPDU sengaja DIBIARKAN default IDF (static RX=10, dynamic RX=32, AMPDU on).
+#
+# Kenapa: sdkconfig.defaults di timbangan-esp32 ada di main/ sehingga tidak pernah
+# terbaca ESP-IDF — device ESP32 yang jalan di lapangan sebenarnya memakai default IDF.
+# Saat file ini dipindah ke root (posisi yang benar), nilai turunan RX=4 + AMPDU=off
+# baru benar-benar aktif dan device gagal asosiasi dengan WIFI_REASON_AUTH_EXPIRE:
+# static RX buffer dipakai driver untuk menerima SEMUA frame 802.11 termasuk auth
+# response, jadi 4 buffer terlalu sempit. Biarkan default agar setara ESP32.
+#
+# Jangan turunkan nilai-nilai ini tanpa uji asosiasi di lokasi pemasangan.
+
+# IRAM opt tetap dimatikan — ini soal ruang IRAM (BLE + WiFi berbarengan),
+# bukan soal perilaku RF, dan tidak memengaruhi asosiasi.
+CONFIG_ESP_WIFI_IRAM_OPT=n
+CONFIG_ESP_WIFI_RX_IRAM_OPT=n
+
+# ==================== MQTT ====================
+CONFIG_MQTT_BUFFER_SIZE=2048
+CONFIG_MQTT_TASK_STACK_SIZE=6144
+CONFIG_MQTT_TRANSPORT_SSL=n
+CONFIG_MQTT_TRANSPORT_WEBSOCKET=n
+
+# ==================== OTA ====================
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=n
+CONFIG_ESP_HTTPS_OTA_ALLOW_HTTP=y
+
+# ==================== BLE ====================
+# ESP32-C3 controller-nya BLE-only, tidak ada Classic BT.
+# CONFIG_BTDM_CTRL_MODE_BLE_ONLY (khusus ESP32 klasik) sengaja tidak dipakai.
+CONFIG_BT_ENABLED=y
+CONFIG_BT_BLUEDROID_ENABLED=y
+CONFIG_BT_BLE_ENABLED=y
+CONFIG_BT_BLE_42_FEATURES_SUPPORTED=y
+CONFIG_BT_GATTS_ENABLE=y
+CONFIG_BT_CLASSIC_ENABLED=n
+CONFIG_BT_BLE_DYNAMIC_ENV_MEMORY=y
+
+# ==================== SYSTEM ====================
+CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=4096
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+CONFIG_FREERTOS_HZ=1000
+
+# ==================== HTTP ====================
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=2048
+
+# ==================== SNTP ====================
+CONFIG_LWIP_SNTP_MAX_SERVERS=2
+
+# ==================== LOG ====================
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_MAXIMUM_LEVEL_INFO=y
+
+# ==================== COMPILER ====================
+# Optimasi ukuran — app partition 1.5MB harus muat BLE + WiFi + MQTT + OTA
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y

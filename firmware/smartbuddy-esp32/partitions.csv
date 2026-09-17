@@ -1,0 +1,22 @@
+# SmartBuddy ESP32 Custom Partition Table (4MB flash)
+#
+# Menggunakan app partition 1.75MB each (vs default 1.25MB)
+# supaya muat: BLE stack + WiFi + IR 6 brand + semua modules
+#
+# Layout verification (semua harus pas di 4MB = 0x400000):
+#   nvs:      0x9000  → 0xD000   (16KB)
+#   otadata:  0xD000  → 0xF000   (8KB)
+#   phy_init: 0xF000  → 0x10000  (4KB)
+#   app0:     0x10000 → 0x1D0000 (1.75MB)
+#   app1:     0x1D000 → 0x390000 (1.75MB)
+#   nvs_ir:   0x390000→ 0x3A0000 (64KB) — dedicated untuk IR learned codes
+#   spiffs:   0x3A0000→ 0x400000 (384KB)
+#
+# Name,     Type, SubType,  Offset,   Size,     Flags
+nvs,        data, nvs,      0x9000,   0x4000,
+otadata,    data, ota,      0xD000,   0x2000,
+phy_init,   data, phy,      0xF000,   0x1000,
+app0,       app,  ota_0,    0x10000,  0x1C0000,
+app1,       app,  ota_1,    0x1D0000, 0x1C0000,
+nvs_ir,     data, nvs,      0x390000, 0x10000,
+spiffs,     data, spiffs,   0x3A0000, 0x60000,

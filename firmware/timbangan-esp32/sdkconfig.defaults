@@ -1,0 +1,63 @@
+# File ini harus di project root (sejajar CMakeLists.txt), bukan di main/ —
+# ESP-IDF hanya membaca sdkconfig.defaults dari project root.
+
+# Partition table — custom CSV (factory + ota_0 + spiffs, butuh flash 4MB)
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# Flash size — partitions.csv berakhir di 0x360000 (3.5MB), jadi 2MB tidak cukup
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+
+# LWIP TCP Keepalive — detect silent dead connections before MQTT keepalive fires
+# Prevents fd=54 EINPROGRESS by forcing TCP reset on broken connections
+# CATATAN: 4 opsi di bawah tidak ada di Kconfig IDF 5.5 (keepalive TCP diset
+# per-socket lewat esp_mqtt_client_config_t.network di kode) — diabaikan saat build.
+CONFIG_LWIP_TCP_KEEPALIVE=y
+CONFIG_LWIP_TCP_KEEPIDLE=10
+CONFIG_LWIP_TCP_KEEPINTVL=5
+CONFIG_LWIP_TCP_KEEPCNT=3
+
+# WiFi
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=4
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=8
+CONFIG_ESP_WIFI_TX_BUFFER_TYPE_DYNAMIC=y
+CONFIG_ESP_WIFI_AMPDU_TX_ENABLED=n
+CONFIG_ESP_WIFI_AMPDU_RX_ENABLED=n
+
+# MQTT
+# CATATAN: 2 opsi ini juga tidak ada di Kconfig IDF 5.5 — nilai efektif diset di
+# mqtt_manager.cpp (mqtt_cfg.buffer.size / mqtt_cfg.task.stack_size).
+CONFIG_MQTT_BUFFER_SIZE=2048
+CONFIG_MQTT_TASK_STACK_SIZE=6144
+
+# OTA
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=n
+CONFIG_ESP_HTTPS_OTA_ALLOW_HTTP=y
+
+# BLE
+CONFIG_BT_ENABLED=y
+CONFIG_BT_BLUEDROID_ENABLED=y
+CONFIG_BT_BLE_ENABLED=y
+CONFIG_BT_CLASSIC_ENABLED=n
+CONFIG_BTDM_CTRL_MODE_BLE_ONLY=y
+CONFIG_BT_BLE_DYNAMIC_ENV_MEMORY=y
+
+# IRAM optimization — pindahkan WiFi dari IRAM ke flash
+CONFIG_ESP_WIFI_IRAM_OPT=n
+CONFIG_ESP_WIFI_RX_IRAM_OPT=n
+
+# System
+CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=4096
+CONFIG_FREERTOS_HZ=1000
+
+# HTTP
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=2048
+
+# Log
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_MAXIMUM_LEVEL_INFO=y
+
+# Compiler optimization — size over speed
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y

@@ -1,0 +1,59 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env.dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kapitmas -d kapitmas_iot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto.prod.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto.passwd:/mosquitto/config/passwd:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    env_file: .env.dev
+    environment:
+      TZ: Asia/Makassar
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_data:/app/data
+      - ./backend/secrets:/app/secrets:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend_data:
+  mosquitto_data:
+  mosquitto_log:

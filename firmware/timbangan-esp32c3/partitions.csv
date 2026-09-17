@@ -1,0 +1,9 @@
+# Layout identik dengan timbangan-esp32 agar binary OTA punya batas ukuran yang sama.
+# Total terpakai 0x360000 (3.5MB) — muat di flash 4MB ESP32-C3 Super Mini.
+# Name,   Type, SubType,  Offset,   Size,
+nvs,      data, nvs,      0x9000,   0x6000,
+phy_init, data, phy,      0xf000,   0x1000,
+factory,  app,  factory,  0x10000,  0x180000,
+ota_0,    app,  ota_0,    0x190000, 0x180000,
+ota_data, data, ota,      0x310000, 0x2000,
+storage,  data, spiffs,   0x312000, 0x4E000,
